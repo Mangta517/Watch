@@ -1,0 +1,14 @@
+﻿# ---------- Keil MDK 构建输出 ----------
+MDK-ARM/Watch/
+*.uvguix.*
+MDK-ARM/build_log.txt
+MDK-ARM/flash_log.txt
+*.build_log*.txt
+
+# ---------- VSCode 构建日志 ----------
+MDK-ARM/.vscode/uv4*.log
+
+# ---------- 杂项 ----------
+*.bak
+*.orig
+Thumbs.db
