@@ -27,7 +27,7 @@
 #define LV_COLOR_DEPTH 16
 
 /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
-#define LV_COLOR_16_SWAP 0
+#define LV_COLOR_16_SWAP 1
 
 /*Enable more complex drawing routines to manage screens transparency.
  *Can be used if the UI is above another layer, e.g. an OSD menu or video player.
@@ -194,7 +194,8 @@
  *-----------*/
 
 /*Enable the log module*/
-#define LV_USE_LOG 1
+#define LV_USE_LOG 0   /* 必须保持0: lv_log 的 puts() 会把 stdio+半主机(_sys_open/BKPT 0xAB)拉进镜像,
+                          裸机启动时在 main() 之前就卡死/硬Fault (2026-09-07 全黑事故根因) */
 #if LV_USE_LOG
 
     /*How important log should be added:

@@ -20,11 +20,12 @@
 #include "main.h"
 #include "i2c.h"
 #include "spi.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lvgl_demo.h"   /* 屏幕配置好后, 打开下方 lvgl_demo() 调用即可运行 */
+#include "lvgl_demo.h"   /* lvgl_demo() 内部会经 lv_port_disp_init→LCD_Init 完成屏幕初始化 */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,8 +92,13 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  //lvgl_demo();   /* 初始化LVGL并启动FreeRTOS任务调度 (参考F103ZET6工程), 屏幕配置好后打开 */
+  /* 背光 PWM 启动 (PA15 = TIM2_CH1, 3.33kHz; lcd.c 的 LCD_BL_CCR_INVERT 已做极性映射) */
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 150);   /* 50% 亮度, 屏幕内容由 LVGL 接管 */
+
+  lvgl_demo();   /* 初始化LVGL并启动FreeRTOS任务调度 (内部 disp_init 会做 LCD_Init) */
   /* USER CODE END 2 */
 
   /* Infinite loop */
