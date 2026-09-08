@@ -15,3 +15,7 @@ Thumbs.db
 
 # ---------- Keil Assistant / VSCode ----------
 MDK-ARM/.vscode/*.log
+
+# ---------- CLI build/flash logs ----------
+MDK-ARM/*.log
+MDK-ARM/startup_stm32f411xe.lst
