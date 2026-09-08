@@ -26,6 +26,7 @@
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi1_tx;
 
 /* SPI1 init function */
 void MX_SPI1_Init(void)
@@ -125,8 +126,31 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN SPI1_MspInit 1 */
+    /* SPI1 DMA Init */
+    /* SPI1_TX Init */
+    hdma_spi1_tx.Instance = DMA2_Stream2;
+    hdma_spi1_tx.Init.Channel = DMA_CHANNEL_2;
+    hdma_spi1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_spi1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi1_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi1_tx.Init.Mode = DMA_NORMAL;
+    hdma_spi1_tx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_spi1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_spi1_tx) != HAL_OK)
+    {
+      Error_Handler();
+    }
 
+    __HAL_LINKDMA(spiHandle,hdmatx,hdma_spi1_tx);
+
+  /* USER CODE BEGIN SPI1_MspInit 1 */
+    /* 冗余双保险: 正源已在 dma.c 的 MX_DMA_Init()(.ioc NVIC 页配置, 优先级5)。
+     * 保留此处是因为本项目曾真实踩坑一次(NVIC 页漏勾→TC中断静默丢失→异步flush僵死),
+     * 再漏勾时这里兜底; SetPriority/EnableIRQ 重复执行幂等, 无害。 */
+    HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* USER CODE END SPI1_MspInit 1 */
   }
   else if(spiHandle->Instance==SPI2)
@@ -177,6 +201,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
     HAL_GPIO_DeInit(GPIOB, LCD_SCL_Pin|LCD_SDA_Pin);
 
+    /* SPI1 DMA DeInit */
+    HAL_DMA_DeInit(spiHandle->hdmatx);
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
   /* USER CODE END SPI1_MspDeInit 1 */

@@ -103,8 +103,50 @@ void LCD_Color_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, 
     }
 }
 
-/* 单色填充(局部): 用 64 像素的重复色缓冲分片写 */
-void LCD_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, uint16_t color)
+/******************************************************************************
+ * DMA 异步刷屏 (OV_Watch 同款): 发起即返回, 完成经 TxCplt 中断通知
+ * 约束: 同一时刻仅一笔在飞(LVGL 在 flush_ready 前不会再调 flush_cb,
+ *       且命令/参数写都在上一笔 ready 之后, 天然串行)
+ *****************************************************************************/
+static LCD_CallbackFunc_t s_lcd_flush_done_cb = NULL;
+
+void LCD_Set_Flush_Complete_Callback(LCD_CallbackFunc_t cb)
+{
+    s_lcd_flush_done_cb = cb;
+}
+
+void LCD_Color_Fill_DMA(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, const uint16_t *color_p)
+{
+    uint32_t bytes = (uint32_t)(xend - xsta + 1) * (uint32_t)(yend - ysta + 1) * 2U;
+
+    LCD_Address_Set(xsta, ysta, xend, yend);
+
+    if (bytes > 0xFFFEU) {            /* F4 HAL Size 为 uint16: 超 64KB 罕见大块, 退回阻塞分片 */
+        LCD_Color_Fill(xsta, ysta, xend, yend, color_p);
+        if (s_lcd_flush_done_cb != NULL) {
+            s_lcd_flush_done_cb();    /* 阻塞路径无 DMA 中断, 手动补完成事件 */
+        }
+        return;
+    }
+    if (HAL_SPI_Transmit_DMA(&hspi1, (uint8_t *)color_p, (uint16_t)bytes) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/* DMA 传输完成回调(HAL_DMA_IRQHandler→SPI_DMATransmitCplt 的下游, DMA2_Stream2 中断上下文)
+ * 注意: 只做"最后一字节移位完成的等待 + 清 RXNE/OVR 垃圾 + 通知", 不调任何 FreeRTOS API */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi->Instance == SPI1) {
+        while (READ_BIT(hspi->Instance->SR, SPI_SR_BSY) != 0U) { }  /* 等末字节移出(~1字节位时间@50M) */
+        (void)hspi->Instance->DR;                                   /* 清 RXNE/OVR(全双工RX垃圾) */
+        if (s_lcd_flush_done_cb != NULL) {
+            s_lcd_flush_done_cb();
+        }
+    }
+}
+
+/* 单色填充(局部): 用 64 像素的重复色缓冲分片写 */void LCD_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, uint16_t color)
 {
     uint32_t px = (uint32_t)(xend - xsta + 1) * (uint32_t)(yend - ysta + 1);
     uint16_t buf[64];

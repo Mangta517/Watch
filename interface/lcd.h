@@ -49,7 +49,14 @@ void LCD_WR_DATA(uint16_t dat);                   /* DC=1 写一字(高字节先
 void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2); /* 已含 OFFSET_Y 补偿 */
 
 /*--- 刷屏接口 ---*/
-void LCD_Color_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, const uint16_t *color_p); /* RGB565块传输(LVGL flush用) */
+void LCD_Color_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, const uint16_t *color_p); /* RGB565块传输(阻塞) */
+
+/* DMA 异步刷屏(SPI1_TX DMA, OV_Watch 同款): 发起即返回,
+ * 传输完成经 HAL_SPI_TxCpltCallback → LCD_Set_Flush_Complete_Callback 注册的回调通知 */
+typedef void (*LCD_CallbackFunc_t)(void);
+void LCD_Set_Flush_Complete_Callback(LCD_CallbackFunc_t cb);
+void LCD_Color_Fill_DMA(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, const uint16_t *color_p);
+
 void LCD_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, uint16_t color);                /* 单色填充 */
 void LCD_Clear(uint16_t color);                                                                             /* 全屏填充 */
 void LCD_DrawPoint(uint16_t x, uint16_t y, uint16_t color);
