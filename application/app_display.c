@@ -35,9 +35,8 @@ static void app_lvgl_task(void *pvParameters);
  **********************/
 void App_Display_Init(void)
 {
-    /* 触摸为轮询语义, EXTI9_5 唤醒扩展暂不使用, 关掉避免误触发 */
-    HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
-
+    /* PB9 触摸 EXTI 保持使能 (MX_GPIO_Init 已配优先级5+NVIC):
+     * 芯片自动休眠后的触摸唤醒提示靠它, 见 touch.c/Touch_GetPoint */
     lv_init();
 
     if (xTaskCreate(app_lvgl_task, "lvgl", APP_LVGL_TASK_STK, NULL,
