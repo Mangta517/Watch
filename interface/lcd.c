@@ -21,16 +21,18 @@
 #define LCD_RES_Clr() HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET)
 #define LCD_RES_Set() HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET)
 
-/* 本工程 SPI1 为 2LINES 全双工接线但只发送(MISO悬空, ST7789 无回读),
- * 与 OV_Watch 相同的 "全双工外设跑单向" 用法, RXNE/OVR 忽略。 */
-#define LCD_SPI_TMO   HAL_MAX_DELAY
+/* SPI 单笔传输超时(ms)。HAL 用 HAL_GetTick 计时, 内核运行后由 it.c 的
+ * SysTick_Handler → HAL_IncTick 持续维护。总线异常时不会永久卡死。 */
+#define LCD_SPI_TMO   1000U
 
 /******************************************************************************
- * 底层: 硬件SPI 写
+ * 底层: 硬件SPI 写 — 与 OV_Watch lcd_init.c 相同的 HAL 阻塞路径 (SPI1 Mode3)
  *****************************************************************************/
 static void LCD_Writ_Bus(uint8_t dat)
 {
-    HAL_SPI_Transmit(&hspi1, &dat, 1, LCD_SPI_TMO);
+    if (HAL_SPI_Transmit(&hspi1, &dat, 1, LCD_SPI_TMO) != HAL_OK) {
+        Error_Handler();   /* SPI 总线故障, 停机便于调试 */
+    }
 }
 
 void LCD_WR_DATA8(uint8_t dat)
@@ -38,13 +40,16 @@ void LCD_WR_DATA8(uint8_t dat)
     LCD_Writ_Bus(dat);
 }
 
-/* 16bit 数据高字节先出 (ST7789 大端要求, 与 LVGL 的 LV_COLOR_16_SWAP=1 配套) */
+/* 16bit 数据高字节先出 (ST7789 大端要求, 与 LVGL 的 LV_COLOR_16_SWAP=1 配套)
+ * 一次 2 字节发送, 同 OV_Watch LCD_WR_DATA 的 temp[2] 写法 */
 void LCD_WR_DATA(uint16_t dat)
 {
     uint8_t tmp[2];
     tmp[0] = (uint8_t)(dat >> 8);
     tmp[1] = (uint8_t)(dat);
-    HAL_SPI_Transmit(&hspi1, tmp, 2, LCD_SPI_TMO);
+    if (HAL_SPI_Transmit(&hspi1, tmp, 2, LCD_SPI_TMO) != HAL_OK) {
+        Error_Handler();
+    }
 }
 
 void LCD_WR_REG(uint8_t reg)
@@ -81,14 +86,21 @@ void LCD_Color_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, 
 {
     uint32_t bytes = (uint32_t)(xend - xsta + 1) * (uint32_t)(yend - ysta + 1) * 2U;
     const uint8_t *p = (const uint8_t *)color_p;
+    HAL_StatusTypeDef st = HAL_OK;
 
     LCD_Address_Set(xsta, ysta, xend, yend);
     while (bytes > 0xFFFFU) {                     /* 每片 <=64KB-2, 保证整像素边界 */
-        HAL_SPI_Transmit(&hspi1, (uint8_t *)p, 0xFFFEU, LCD_SPI_TMO);
+        st = HAL_SPI_Transmit(&hspi1, (uint8_t *)p, 0xFFFEU, LCD_SPI_TMO);
+        if (st != HAL_OK) break;
         p += 0xFFFEU;
         bytes -= 0xFFFEU;
     }
-    if (bytes) HAL_SPI_Transmit(&hspi1, (uint8_t *)p, (uint16_t)bytes, LCD_SPI_TMO);
+    if (st == HAL_OK && bytes) {
+        st = HAL_SPI_Transmit(&hspi1, (uint8_t *)p, (uint16_t)bytes, LCD_SPI_TMO);
+    }
+    if (st != HAL_OK) {               /* 刷屏发送失败不再静默丢帧 */
+        Error_Handler();
+    }
 }
 
 /* 单色填充(局部): 用 64 像素的重复色缓冲分片写 */
@@ -187,6 +199,8 @@ void LCD_Init(void)
 
     LCD_WR_REG(0x21);                       /* Display Inversion ON (OV_Watch 实配) */
     LCD_WR_REG(0x29);                       /* Display ON */
+
+    LCD_Clear(LCD_BLACK);   /* 上电 GRAM 是随机数据, 立即刷黑, 干净启动 */
 
     LCD_Open_Light();
     LCD_Set_Light(80);                      /* 默认 80% 亮度 */

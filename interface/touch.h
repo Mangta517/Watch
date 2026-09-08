@@ -19,6 +19,8 @@ extern "C" {
 /* 返回读到的 ChipID (CST816S≈0xB5, CST816D≈0xB7); 总线异常返回 0 */
 uint8_t Touch_Init(void);
 
+extern volatile uint8_t g_tp_chip_id;   /* 最近一次 ChipID 读数 (0xB5/0xB7=I2C通, 0=总线死) */
+
 uint8_t Touch_GetChipID(void);
 
 /* 读取一个触点: 返回手指数(0=无触摸/读失败), x/y 为屏幕坐标(与 LCD 对齐) */

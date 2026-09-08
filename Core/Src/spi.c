@@ -42,8 +42,11 @@ void MX_SPI1_Init(void)
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  /* ST7789 对齐 OV_Watch 参考实现: Mode3 (CPOL=High, CPHA=2Edge)。
+   * 分频先保持 ÷8=12.5MHz (OV 用 ÷2=50MHz), 显示稳定后再提速。
+   * 注意: .ioc 已同步写 CLKPolarity/CLKPhase, CubeMX 重新生成不会丢。 */
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;

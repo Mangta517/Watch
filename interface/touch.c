@@ -31,7 +31,9 @@
 #define TP_RST_0()  HAL_GPIO_WritePin(TP_RST_GPIO_Port, TP_RST_Pin, GPIO_PIN_RESET)
 #define TP_RST_1()  HAL_GPIO_WritePin(TP_RST_GPIO_Port, TP_RST_Pin, GPIO_PIN_SET)
 
-#define TP_I2C_TMO  50
+volatile uint8_t g_tp_chip_id = 0;   /* 诊断: 最近一次读到的 CST816 ChipID (0xB5/0xB7=总线正常) */
+
+#define TP_I2C_TMO  50U    /* I2C 单笔超时(ms), 总线异常时不会永久卡死 */
 
 /******************************************************************************
  * I2C 读写原语
@@ -63,6 +65,7 @@ uint8_t Touch_GetChipID(void)
 {
     uint8_t id = 0;
     (void)tp_read_regs(REG_ChipID, &id, 1);
+    g_tp_chip_id = id;    /* 总线活没活, 调试器读这个: 0xB5/0xB7=通, 0=死 */
     return id;    /* CST816S≈0xB5, CST816D≈0xB7 */
 }
 

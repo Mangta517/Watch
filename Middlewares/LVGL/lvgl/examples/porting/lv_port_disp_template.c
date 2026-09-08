@@ -22,8 +22,8 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
 /**********************
  *  STATIC VARIABLES
  **********************/
-/* 双块 1/10 屏 partial buffer, 内部 SRAM (.bss): 渲染 buf_2 与阻塞发送 buf_1 天然交替,
- * LVGL 会自动使用另一块; 保留两块是为将来改 DMA 时渲染/搬运并行 */
+/* 双块 1/10 屏 partial buffer, 内部 SRAM (.bss): LVGL 渲染 buf_2 的同时可阻塞发送 buf_1;
+ * 保留两块是为将来改 DMA 时渲染/搬运并行 */
 #define LVGL_BUF_PX   (LCD_WIDTH * LCD_HEIGHT / 10)
 static lv_color_t buf_1[LVGL_BUF_PX];
 static lv_color_t buf_2[LVGL_BUF_PX];
@@ -33,7 +33,7 @@ static lv_color_t buf_2[LVGL_BUF_PX];
  **********************/
 void lv_port_disp_init(void)
 {
-    /* 先初始化物理屏 (含背光) */
+    /* 先初始化物理屏 (含刷黑与背光) */
     disp_init();
 
     static lv_disp_draw_buf_t draw_buf_dsc;

@@ -1835,10 +1835,75 @@
               <FileType>1</FileType>
               <FilePath>../Middlewares/LVGL/lvgl/src/widgets/lv_textarea.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middlewares/LVGL/demos</GroupName>
+          <Files>
             <File>
-              <FileName>lvgl_demo.c</FileName>
+              <FileName>lv_demo_stress.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Middlewares/LVGL/lvgl_demo.c</FilePath>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/stress/lv_demo_stress.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_montserrat_12_compr_az.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/stress/assets/lv_font_montserrat_12_compr_az.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_montserrat_16_compr_az.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/stress/assets/lv_font_montserrat_16_compr_az.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_montserrat_28_compr_az.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/stress/assets/lv_font_montserrat_28_compr_az.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_demo_benchmark.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/lv_demo_benchmark.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_benchmark_cogwheel_alpha16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/img_benchmark_cogwheel_alpha16.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_benchmark_cogwheel_argb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/img_benchmark_cogwheel_argb.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_benchmark_cogwheel_chroma_keyed.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/img_benchmark_cogwheel_chroma_keyed.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_benchmark_cogwheel_indexed16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/img_benchmark_cogwheel_indexed16.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_benchmark_cogwheel_rgb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/img_benchmark_cogwheel_rgb.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_bechmark_montserrat_12_compr_az.c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/lv_font_bechmark_montserrat_12_compr_az.c.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_bechmark_montserrat_16_compr_az.c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/lv_font_bechmark_montserrat_16_compr_az.c.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_bechmark_montserrat_28_compr_az.c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/LVGL/lvgl/demos/benchmark/assets/lv_font_bechmark_montserrat_28_compr_az.c.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1872,6 +1937,28 @@
         </Group>
         <Group>
           <GroupName>application</GroupName>
+          <Files>
+            <File>
+              <FileName>app_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\app_display.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_display.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\app_display.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\app_ui.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_ui.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\app_ui.h</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

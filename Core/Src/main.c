@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lvgl_demo.h"   /* lvgl_demo() 内部会经 lv_port_disp_init→LCD_Init 完成屏幕初始化 */
+#include "app_display.h"   /* 应用层总入口: 集成 LCD/触摸/LVGL/FreeRTOS, 内部完成显示与调度启动 */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,11 +94,8 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  /* 背光 PWM 启动 (PA15 = TIM2_CH1, 3.33kHz; lcd.c 的 LCD_BL_CCR_INVERT 已做极性映射) */
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 150);   /* 50% 亮度, 屏幕内容由 LVGL 接管 */
-
-  lvgl_demo();   /* 初始化LVGL并启动FreeRTOS任务调度 (内部 disp_init 会做 LCD_Init) */
+  /* main 只做 CubeMX 初始化; 背光/屏幕/触摸由应用层接管 */
+  App_Display_Init();   /* 不返回: 内部创建 LVGL 任务并启动 FreeRTOS 调度器 */
   /* USER CODE END 2 */
 
   /* Infinite loop */
